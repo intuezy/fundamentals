@@ -1,3 +1,4 @@
+import hashlib
 import socket
 import threading
 
@@ -48,14 +49,29 @@ def handle_client(client_socket, client_address):
 
                     status_code = ""
                     body = ""
+                    server_etag = ""
                     products = getProducts()
+
+                    headers = {}
+                    for line in request_lines[1:]:
+                        if not line.strip():
+                            break
+                        if ":" in line:
+                            key, value = line.split(":", 1)
+                            headers[key.strip().lower()] = value.strip()
 
                     if path == "/":
                         status_code = "200 OK"
                         body = "selamat datang dihome"
                     elif path == "/halo":
-                        status_code = "200 OK"
-                        body = products
+                        client_etag = headers.get("if-none-match")
+                        server_etag = f'"{hashlib.md5(products.encode()).hexdigest()}"'
+                        if client_etag == server_etag:
+                            status_code = "304 Not Modified"
+                            body = ""
+                        else:
+                            status_code = "200 OK"
+                            body = products
                     else:
                         status_code = "404 Not Found"
                         body = "404 halaman tidak ditemukan"
@@ -65,6 +81,7 @@ def handle_client(client_socket, client_address):
 
                     response_headers = (
                         f"HTTP/1.1 {status_code}\r\n"
+                        f"ETag: {server_etag}\r\n"
                         "Content-Type: text/plain; charset=utf-8\r\n"
                         f"Content-Length: {content_length}\r\n"
                         "\r\n"
