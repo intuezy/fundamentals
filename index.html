@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Simulasi Sistem Web Fundamental</title>
+        <style>
+            body {
+                margin: 0;
+                background-color: #1a1a1a;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+            }
+            canvas {
+                border: 2px solid #ffffff;
+                background-color: #111;
+            }
+        </style>
+    </head>
+
+    <body>
+        <canvas id="simulasiCanvas" width="600" height="400"></canvas>
+    </body>
+    <script>
+        const canvas = document.getElementById("simulasiCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let mobil = {
+            x: 50,
+            y: 180,
+            lebar: 40,
+            tinggi: 20,
+            kecepatanX: 2,
+        };
+
+        function updateSistem() {
+            mobil.x += mobil.kecepatanX;
+
+            if (mobil.x + mobil.lebar > canvas.width) {
+                mobil.kecepatanX = -mobil.kecepatanX;
+            }
+
+            if (mobil.x < 0) {
+                mobil.kecepatanX = mobil.kecepatanX;
+            }
+        }
+
+        function gambarSistem() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = `#555`;
+            ctx.lineWidth = 4;
+            ctx.setLineDash([20, 20]);
+            ctx.beginPath();
+            ctx.moveTo(0, 200);
+            ctx.lineTo(canvas.width, 200);
+            ctx.stroke();
+
+            ctx.fillStyle = "#ff4757";
+            ctx.fillRect(mobil.x, mobil.y, mobil.lebar, mobil.tinggi);
+        }
+
+        function loop() {
+            console.log("Mesin loop berjalan posisi x mobil:", mobil.x);
+            updateSistem();
+            gambarSistem();
+            requestAnimationFrame(loop);
+        }
+
+        loop();
+    </script>
+</html>
